@@ -321,10 +321,11 @@ extension SwiftLint {
     }
 
     private static var tmpSwiftlintOutputFilePath: String {
+		let fileName = "swiftlintReport_\(UUID().uuidString).json"
         if #available(OSX 10.12, *) {
-            return FileManager.default.temporaryDirectory.appendingPathComponent("swiftlintReport.json").path
+            return FileManager.default.temporaryDirectory.appendingPathComponent(fileName).path
         } else {
-            return NSTemporaryDirectory() + "swiftlintReport.json"
+            return NSTemporaryDirectory() + fileName
         }
     }
 }
