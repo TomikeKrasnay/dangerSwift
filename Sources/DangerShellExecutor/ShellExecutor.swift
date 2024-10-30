@@ -21,27 +21,31 @@ public protocol ShellExecuting {
 extension ShellExecuting {
     @discardableResult
     public func execute(_ command: String,
-                        arguments: [String]) -> String {
+                        arguments: [String]) -> String
+    {
         execute(command, arguments: arguments, environmentVariables: [:], outputFile: nil)
     }
 
     @discardableResult
     func execute(_ command: String,
                  arguments: [String],
-                 environmentVariables: [String: String]) -> String {
+                 environmentVariables: [String: String]) -> String
+    {
         execute(command, arguments: arguments, environmentVariables: environmentVariables, outputFile: nil)
     }
 
     @discardableResult
     public func spawn(_ command: String,
-                      arguments: [String]) throws -> String {
+                      arguments: [String]) throws -> String
+    {
         try spawn(command, arguments: arguments, environmentVariables: [:], outputFile: nil)
     }
 
     @discardableResult
     func spawn(_ command: String,
                arguments: [String],
-               environmentVariables: [String: String]) throws -> String {
+               environmentVariables: [String: String]) throws -> String
+    {
         try spawn(command, arguments: arguments, environmentVariables: environmentVariables, outputFile: nil)
     }
 }
@@ -52,7 +56,8 @@ public struct ShellExecutor: ShellExecuting {
     public func execute(_ command: String,
                         arguments: [String],
                         environmentVariables: [String: String],
-                        outputFile: String?) -> String {
+                        outputFile: String?) -> String
+    {
         let task = makeTask(for: command,
                             with: arguments,
                             environmentVariables: environmentVariables,
@@ -61,9 +66,11 @@ public struct ShellExecutor: ShellExecuting {
         let pipe = Pipe()
         task.standardOutput = pipe
         task.launch()
-        task.waitUntilExit()
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
+
+        task.waitUntilExit()
+
         return String(data: data, encoding: .utf8)!.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
@@ -72,7 +79,8 @@ public struct ShellExecutor: ShellExecuting {
     public func spawn(_ command: String,
                       arguments: [String],
                       environmentVariables: [String: String],
-                      outputFile: String?) throws -> String {
+                      outputFile: String?) throws -> String
+    {
         let task = makeTask(for: command,
                             with: arguments,
                             environmentVariables: environmentVariables,
@@ -83,11 +91,15 @@ public struct ShellExecutor: ShellExecuting {
         let stderr = Pipe()
         task.standardError = stderr
         task.launch()
-        task.waitUntilExit()
 
         // Pull out the STDOUT as a string because we'll need that regardless
         let stdoutData = stdout.fileHandleForReading.readDataToEndOfFile()
         let stdoutString = String(data: stdoutData, encoding: .utf8)!
+
+        // Read from STDERR to ensure the `Pipe` does not fill up
+        let stderrData = stderr.fileHandleForReading.readDataToEndOfFile()
+
+        task.waitUntilExit()
 
         // 0 is no problems in unix land
         if task.terminationStatus == 0 {
@@ -95,7 +107,6 @@ public struct ShellExecutor: ShellExecuting {
         }
 
         // OK, so it failed, raise a new error with all the useful metadata
-        let stderrData = stderr.fileHandleForReading.readDataToEndOfFile()
         let stderrString = String(data: stderrData, encoding: .utf8)!
 
         throw SpawnError.commandFailed(command: command,
@@ -107,10 +118,11 @@ public struct ShellExecutor: ShellExecuting {
     private func makeTask(for command: String,
                           with arguments: [String],
                           environmentVariables: [String: String],
-                          outputFile: String?) -> Process {
+                          outputFile: String?) -> Process
+    {
         let scriptOutputFile: String
-
-        if let outputFile = outputFile {
+        
+        if let outputFile {
             scriptOutputFile = " > \(outputFile)"
         } else {
             scriptOutputFile = ""

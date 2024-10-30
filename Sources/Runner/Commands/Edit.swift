@@ -6,7 +6,7 @@ import RunnerLib
 func editDanger(version dangerSwiftVersion: String, logger: Logger) throws {
     let fileManager = FileManager.default
     let dangerfilePath: String
-
+    
     if let dangerfileArgumentPath = DangerfilePathFinder.dangerfilePath() {
         dangerfilePath = dangerfileArgumentPath.fullPath
     } else {
@@ -16,7 +16,7 @@ func editDanger(version dangerSwiftVersion: String, logger: Logger) throws {
     if !fileManager.fileExists(atPath: dangerfilePath) {
         createDangerfile(dangerfilePath)
     }
-
+    
     let absoluteLibPath: String
     let libsImport: [String]
 
@@ -32,7 +32,6 @@ func editDanger(version dangerSwiftVersion: String, logger: Logger) throws {
                             separator: "\n")
             exit(1)
         }
-
         absoluteLibPath = libPath.fullPath
         libsImport = ["-l Danger"]
     }
